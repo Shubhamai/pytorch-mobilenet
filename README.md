@@ -1,21 +1,23 @@
-# MobileNet
-
-This repo contains the implementation of original MobileNet from the 2017 paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf) by Google. 
+## MobileNet
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Shubhamai/pytorch-mobilenet/blob/main/LICENSE)
 
 [`model.py`](/model.py)
 
+This repo contains the implementation of the original MobileNet from the 2017 paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf) by Google. 
+
+## Table of Contents
 - [MobileNet](#mobilenet)
+- [Table of Contents](#table-of-contents)
 - [Usage](#usage)
-  - [Acknowledgements](#acknowledgements)
-  - [Citation](#citation)
-  - [License](#license)
+- [Acknowledgements](#acknowledgements)
+- [Citation](#citation)
 
 The key takeways for this paper are -
 1.  Using Depthwise Seperable Convolution with Pointwise Layer instead of standard convolution to substantially decrease the number of parameters making CNN viable for mobile & embedded devices.   
 
 
 
-# Usage
+## Usage
 
 
 ## Acknowledgements
@@ -36,6 +38,3 @@ I found these resources helpful to understand MobileNet and Depthwise Seperable 
     primaryClass={cs.CV}
 }
 ```
-
-## License
-

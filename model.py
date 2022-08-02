@@ -6,24 +6,37 @@ Paper
 author : shubham.aiengineer@gmail.com
 """
 
-import torch
-import torch.nn.functional as F
 # Importing Libraries
+import torch
 from torch import nn
 from torchsummary import summary
 
+# The configuration of MobileNet with alpha (  ) set to 1.
+config = (
+    (32, 64, 1),  # input channels, out
+    (64, 128, 2),
+    (128, 128, 1),
+    (128, 256, 2),
+    (256, 256, 1),
+    (256, 512, 2),
+    (512, 512, 1),
+    (512, 512, 1),
+    (512, 512, 1),
+    (512, 512, 1),
+    (512, 512, 1),
+    (512, 1024, 2),
+    (1024, 1024, 1),
+)
+
 
 class DepthwiseConvBlock(nn.Module):
-    """Depthwise seperable with pointwise convolution with relu and batchnorm respectively.
-
-    Attributes:
-        in_channels: Input channels for depthwise convolution
-        out_channels: Output channels for pointwise convolution
-        stride: Stride paramemeter for depthwise convolution
-    """
+    """Depthwise seperable with pointwise convolution with relu and batchnorm respectively."""
 
     def __init__(self, in_channels: int, out_channels: int, stride: int = 1):
-        """Initialize parameters."""
+        """Attributes:
+        `in_channels`: Integer indicating input channels for depthwise convolution
+        `out_channels`: Integer indicating output channels for pointwise convolution
+        `stride`: Integer indicating stride paramemeter for depthwise convolution"""
         super().__init__()
 
         # Depthwise conv
@@ -57,25 +70,31 @@ class DepthwiseConvBlock(nn.Module):
 
 
 class MobileNetV1(nn.Module):
-    """Constructs MobileNetV1 architecture
+    """Constructs MobileNetV1 architecture"""
 
-    Attributes:
-        n_classes: Number of output neuron in last layer
-        alpha:
-    """
-
-    def __init__(self, n_classes: int = 1000, alpha: float = 1.0):
-        """Initialize parameters."""
+    def __init__(
+        self, n_classes: int = 1000, input_channel: int = 3, alpha: float = 1.0
+    ):
+        """Attributes:
+        `n_classes`: An integer count of output neuron in last layer.
+        `input_channel`: An integer value input channels in first conv layer
+        `alpha` (0, 1] : A float value indicating network width multiplier. Suggested Values - 0.25, 0.5, 0.75, 1."""
         super().__init__()
 
-        self.model = nn.Sequential(nn.Conv2d(3, 32, (3, 3), stride=2, padding=1))
+        self.model = nn.Sequential(
+            nn.Conv2d(input_channel, int(32 * alpha), (3, 3), stride=2, padding=1)
+        )
 
-        for layer in config:
-            self.model.append(DepthwiseConvBlock(layer[0], layer[1], stride=layer[2]))
+        for in_channels, out_channels, stride in config:
+            self.model.append(
+                DepthwiseConvBlock(
+                    int(in_channels * alpha), int(out_channels * alpha), stride
+                )
+            )
 
-        self.model.append(nn.AvgPool2d(7))
+        self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
-        self.model.append(nn.Linear(1024, n_classes))
+        self.model.append(nn.Linear(int(1024 * alpha), n_classes))
         self.model.append(nn.Softmax())
 
     def forward(self, x):
@@ -85,22 +104,6 @@ class MobileNetV1(nn.Module):
         return x
 
 
-config = (
-    (32, 64, 1),
-    (64, 128, 2),
-    (128, 128, 1),
-    (128, 256, 2),
-    (256, 256, 1),
-    (256, 512, 2),
-    (512, 512, 1),
-    (512, 512, 1),
-    (512, 512, 1),
-    (512, 512, 1),
-    (512, 512, 1),
-    (512, 1024, 2),
-    (1024, 1024, 1),
-)
-
 if __name__ == "__main__":
 
     # Generating Sample image
@@ -108,9 +111,14 @@ if __name__ == "__main__":
     image = torch.rand(*image_size)
 
     # Model
-    mobilenet_v1 = MobileNetV1()
+    mobilenet_v1 = MobileNetV1(alpha=1)
 
-    summary(mobilenet_v1, input_size=image_size)
+    summary(
+        mobilenet_v1,
+        input_data=image,
+        col_names=["input_size", "output_size", "num_params"],
+        device="cpu",
+    )
 
     out = mobilenet_v1(image)
     print("Output shape : ", out.shape)
