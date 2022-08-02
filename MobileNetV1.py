@@ -12,8 +12,9 @@ from torch import nn
 from torchsummary import summary
 
 # The configuration of MobileNet with depth multiplier set to 1.
+# input channels, output channels, stride
 config = (
-    (32, 64, 1),  # input channels, output channels, stride
+    (32, 64, 1),  
     (64, 128, 2),
     (128, 128, 1),
     (128, 256, 2),

@@ -18,15 +18,17 @@ This repo contains the implementation of MobileNetV1 and V2 from the 2017 paper 
 The key takeaways for this papers are -
 
 1. MobileNetv1
-   1.  Using Depthwise Seperable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
+   1.  Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
 
 
 
 ## Usage
 
+> In progress...
 
 ## Notes
 - In `MobileNetV1` paper, there was no mention of using `ReLU6` as activation function, but since I found most blogs and resources using ReLU6,  I decided to use that by default. But in case, I added an extra parameter `use_relu6` ( defaults to `true` ) in allows the option to either use `ReLU` or `ReLU6`.  
+  - Update : Turns out it is mentioned in the `MobileNetv2` paper. 
 
 ## Acknowledgements
 
