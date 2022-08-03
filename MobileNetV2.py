@@ -25,6 +25,33 @@ config = (
 )
 
 
+class ConvBatchReLUBlock(nn.Module):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: list,
+        stride: int = 1,
+        padding: int = 0,
+        groups: int = 1,
+        bias:bool=False
+    ):
+        super().__init__()
+
+        self.conv = nn.Conv2d(in_channels, out_channels,kernel_size, stride=stride, padding=padding, groups=groups, bias=bias)
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU6()
+
+    def forward(self, x):
+        """Perform forward pass."""
+
+        x = self.conv(x)
+        x = self.bn(x)
+        x = self.relu(x)
+
+        return x
+
+
 class InverseResidualBlock(nn.Module):
     """Constructs a inverse residual block with depthwise seperable convolution"""
 
@@ -44,9 +71,10 @@ class InverseResidualBlock(nn.Module):
         super().__init__()
 
         hidden_channels = in_channels * expansion_factor
-        self.residual = in_channels == out_channels
+        self.residual = in_channels == out_channels and stride == 1
 
         self.conv1 = nn.Conv2d(in_channels, hidden_channels, (1, 1))
+        self.bn1 = nn.BatchNorm2d(hidden_channels)
         self.relu1 = nn.ReLU6()
         self.depthwise_conv = nn.Conv2d(
             hidden_channels,
@@ -56,6 +84,7 @@ class InverseResidualBlock(nn.Module):
             padding=1,
             groups=hidden_channels,
         )
+        self.bn2 = nn.BatchNorm2d(hidden_channels)
         self.relu2 = nn.ReLU6()
         self.conv2 = nn.Conv2d(hidden_channels, out_channels, (1, 1))
 
@@ -65,8 +94,10 @@ class InverseResidualBlock(nn.Module):
         identity = x
 
         x = self.conv1(x)
+        x = self.bn1(x)
         x = self.relu1(x)
         x = self.depthwise_conv(x)
+        x = self.bn2(x)
         x = self.relu2(x)
         x = self.conv2(x)
 
@@ -83,6 +114,7 @@ class MobileNetV2(nn.Module):
         self,
         n_classes: int = 1000,
         input_channel: int = 3,
+        dropout: float = 0.2,
     ):
         """Attributes:
         `n_classes`: An integer count of output neuron in last layer.
@@ -94,6 +126,8 @@ class MobileNetV2(nn.Module):
         self.model = nn.Sequential(
             nn.Conv2d(input_channel, 32, (3, 3), stride=2, padding=1)
         )
+        self.model.append(nn.BatchNorm2d(32))
+        self.model.append(nn.ReLU6())
 
         for in_channels, out_channels, stride, expansion_factor, repeat in config:
             for _ in range(repeat):
@@ -109,8 +143,11 @@ class MobileNetV2(nn.Module):
                 stride = 1
 
         self.model.append(nn.Conv2d(320, 1028, (1, 1)))
+        self.model.append(nn.BatchNorm2d(1028))
+        self.model.append(nn.ReLU6())
         self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
+        self.model.append(nn.Dropout(dropout))
         self.model.append(nn.Linear(1028, n_classes))
 
     def forward(self, x):
