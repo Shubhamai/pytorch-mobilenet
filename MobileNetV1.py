@@ -11,7 +11,7 @@ import torch
 from torch import nn
 from torchsummary import summary
 
-# The configuration of MobileNet with depth multiplier set to 1.
+# The configuration of MobileNetV1 
 # input channels, output channels, stride
 config = (
     (32, 64, 1),  
@@ -31,7 +31,6 @@ config = (
 
 
 class DepthwiseSepConvBlock(nn.Module):
-    """Constructs Depthwise seperable with pointwise convolution with relu and batchnorm respectively."""
 
     def __init__(
         self,
@@ -40,12 +39,15 @@ class DepthwiseSepConvBlock(nn.Module):
         stride: int = 1,
         use_relu6: bool = True,
     ):
-        """Attributes:
-        `in_channels`: Integer indicating input channels for depthwise convolution
-        `out_channels`: Integer indicating output channels for pointwise convolution
-        `stride`: Integer indicating stride paramemeter for depthwise convolution
-        `use_relu6` : A boolean value indicating whether to use standard ReLU or ReLU6 for depthwise separable convolution block"""
+        """Constructs Depthwise seperable with pointwise convolution with relu and batchnorm respectively.
 
+        Args:
+            in_channels (int): input channels for depthwise convolution
+            out_channels (int): output channels for pointwise convolution
+            stride (int, optional): stride paramemeter for depthwise convolution. Defaults to 1.
+            use_relu6 (bool, optional): whether to use standard ReLU or ReLU6 for depthwise separable convolution block. Defaults to True.
+        """
+        
         super().__init__()
 
         # Depthwise conv
@@ -59,19 +61,13 @@ class DepthwiseSepConvBlock(nn.Module):
         )
         self.bn1 = nn.BatchNorm2d(in_channels)
 
-        if use_relu6:
-            self.relu1 = nn.ReLU6()
-        else:
-            self.relu1 = nn.ReLU()
+        self.relu1 = nn.ReLU6() if use_relu6    else nn.ReLU()
 
         # Pointwise conv
         self.pointwise_conv = nn.Conv2d(in_channels, out_channels, (1, 1))
         self.bn2 = nn.BatchNorm2d(out_channels)
 
-        if use_relu6:
-            self.relu2 = nn.ReLU6()
-        else:
-            self.relu2 = nn.ReLU()
+        self.relu2 = nn.ReLU6() if use_relu6    else nn.ReLU()
 
     def forward(self, x):
         """Perform forward pass."""
@@ -87,7 +83,6 @@ class DepthwiseSepConvBlock(nn.Module):
 
 
 class MobileNetV1(nn.Module):
-    """Constructs MobileNetV1 architecture"""
 
     def __init__(
         self,
@@ -96,11 +91,15 @@ class MobileNetV1(nn.Module):
         depth_multiplier: float = 1.0,
         use_relu6: bool = True,
     ):
-        """Attributes:
-        `n_classes`: An integer count of output neuron in last layer.
-        `input_channel`: An integer value input channels in first conv layer
-        `depth_multiplier` (0, 1] : A float value indicating network width multiplier ( width scaling ). Suggested Values - 0.25, 0.5, 0.75, 1.
-        `use_relu6` : A boolean value indicating whether to use standard ReLU or ReLU6 for depthwise separable convolution block"""
+        """Constructs MobileNetV1 architecture
+
+        Args:
+            n_classes (int, optional): count of output neuron in last layer. Defaults to 1000.
+            input_channel (int, optional): input channels in first conv layer. Defaults to 3.
+            depth_multiplier (float, optional): network width multiplier ( width scaling ). Suggested Values - 0.25, 0.5, 0.75, 1.. Defaults to 1.0.
+            use_relu6 (bool, optional): whether to use standard ReLU or ReLU6 for depthwise separable convolution block. Defaults to True.
+        """
+
         super().__init__()
 
         self.model = nn.Sequential(
@@ -109,11 +108,12 @@ class MobileNetV1(nn.Module):
             )
         )
 
+        # Adding depthwise block in the model from the config
         for in_channels, out_channels, stride in config:
             self.model.append(
                 DepthwiseSepConvBlock(
-                    int(in_channels * depth_multiplier),
-                    int(out_channels * depth_multiplier),
+                    int(in_channels * depth_multiplier), # input channels
+                    int(out_channels * depth_multiplier), # output channels
                     stride,
                     use_relu6=use_relu6,
                 )
@@ -122,7 +122,6 @@ class MobileNetV1(nn.Module):
         self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
         self.model.append(nn.Linear(int(1024 * depth_multiplier), n_classes))
-        # self.model.append(nn.Softmax())
 
     def forward(self, x):
         """Perform forward pass."""

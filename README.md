@@ -1,11 +1,9 @@
 ## MobileNet
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Shubhamai/pytorch-mobilenet/blob/main/LICENSE)
 
-Standalone models files - [`MobileNetV1.py`](/MobileNetV1.py)
-[`MobileNetV2.py`](/MobileNetV2.py)
-
-
-This repo contains the implementation of MobileNetV1 and V2 from the 2017 paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf) and 2019 paper [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381) respectively. 
+This repo contains the following implementations : 
+- [`MobileNetV1.py`](/MobileNetV1.py) : [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf)
+- [`MobileNetV2.py`](/MobileNetV2.py) : [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381). 
 
 ## Table of Contents
 - [MobileNet](#mobilenet)
@@ -18,7 +16,9 @@ This repo contains the implementation of MobileNetV1 and V2 from the 2017 paper 
 The key takeaways for this papers are -
 
 1. MobileNetv1
-   1.  Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
+   1. Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
+2. MobileNetv2
+   1. It improves on MobileNetv1 by using *linear bottleneck with inverted residuals and depwise seperable convolution* and it's main building block. It does sounds very mountful but is simply a combination of many basic ideas. [This blog](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini explains all of these terms quite well.  
 
 
 
@@ -27,8 +27,9 @@ The key takeaways for this papers are -
 > In progress...
 
 ## Notes
-- In `MobileNetV1` paper, there was no mention of using `ReLU6` as activation function, but since I found most blogs and resources using ReLU6,  I decided to use that by default. But in case, I added an extra parameter `use_relu6` ( defaults to `true` ) in allows the option to either use `ReLU` or `ReLU6`.  
-  - Update : Turns out it is mentioned in the `MobileNetv2` paper. 
+- In `MobileNetV1` paper, there was no mention of using `ReLU6` as activation function, but since I found most blogs and resources using ReLU6,  I decided to use that by default. But in case, I added an extra parameter `use_relu6` ( defaults to `true` ) in allows the option to either use `ReLU` or `ReLU6`. 
+  - Update: Turns out it is mentioned in the `MobileNetv2` paper. 
+- In `MobileNetV2`, the paper mentions about 3.4 million parameters as a default model, but I have been unable to reproduce that, currently, the model has about 3.17 million parameters. 
 
 ## Acknowledgements
 
@@ -41,6 +42,7 @@ I found these resources helpful to understand MobileNet and Depthwise Seperable 
 - MobileNetV2
     - [MobileNetV2 and EfficientNet](https://youtu.be/IBndcd4UfTs) by Rahul Deora
     - [New mobile neural network architectures](https://machinethink.net/blog/mobile-architectures/) by Matthijs Hollemans
+    - [Residual, BottleNeck, Inverted Residual, Linear BottleNeck, MBConv Explained](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini
 
 ## Citation
 ```

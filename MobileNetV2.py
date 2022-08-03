@@ -11,8 +11,7 @@ import torch
 from torch import nn
 from torchsummary import summary
 
-# The configuration of MobileNet with depth multiplier set to 1.
-
+# The configuration of MobileNetV2
 # input channels, output channels, stride, expansion factor, repeat
 config = (
     (32, 16, 1, 1, 1),
@@ -26,7 +25,6 @@ config = (
 
 
 class ConvNormReLUBlock(nn.Module):
-    """Constructs a block containing a combination of convolution, batchnorm and relu"""
 
     def __init__(
         self,
@@ -38,6 +36,18 @@ class ConvNormReLUBlock(nn.Module):
         groups: int = 1,
         bias: bool = False,
     ):
+        """Constructs a block containing a combination of convolution, batchnorm and relu
+        
+        Args:
+            in_channels (int): input channels
+            out_channels (int): output channels
+            kernel_size (list): kernel size parameter for convolution
+            stride (int, optional): stride parameter for convolution. Defaults to 1.
+            padding (int, optional): padding parameter for convolution. Defaults to 0.
+            groups (int, optional): number of blocked connections from input channel to output channel for convolution. Defaults to 1.
+            bias (bool, optional): whether to enable bias in convolution. Defaults to False.
+        """
+        
         super().__init__()
 
         self.conv = nn.Conv2d(
@@ -63,7 +73,6 @@ class ConvNormReLUBlock(nn.Module):
 
 
 class InverseResidualBlock(nn.Module):
-    """Constructs a inverse residual block with depthwise seperable convolution"""
 
     def __init__(
         self,
@@ -72,12 +81,15 @@ class InverseResidualBlock(nn.Module):
         expansion_factor: int = 6,
         stride: int = 1,
     ):
+        """Constructs a inverse residual block with depthwise seperable convolution
+        
+        Args:
+            in_channels (int): input channels
+            out_channels (int): output channels
+            expansion_factor (int, optional): Calculating the input & output channel for depthwise convolution by multiplying the expansion factor with input channels. Defaults to 6.
+            stride (int, optional): stride paramemeter for depthwise convolution. Defaults to 1.
+        """
 
-        """Attributes:
-        `in_channels`: Integer indicating input channels
-        `out_channels`: Integer indicating output channels
-        `expansion_factor` : Calculating the input & output channel for depthwise convolution by multiplying the expansion factor with input channels
-        `stride`: Integer indicating stride paramemeter for depthwise convolution"""
         super().__init__()
 
         hidden_channels = in_channels * expansion_factor
@@ -110,19 +122,21 @@ class InverseResidualBlock(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    """Constructs MobileNetV2 architecture"""
 
     def __init__(
         self,
         n_classes: int = 1000,
         input_channel: int = 3,
         dropout: float = 0.2,
-    ):
-        """Attributes:
-        `n_classes`: An integer count of output neuron in last layer.
-        `input_channel`: An integer value input channels in first conv layer
-        `dropout` [0, 1] : A float parameter for dropout in last layer
+    ):    
+        """Constructs MobileNetV2 architecture
+        
+        Args:
+            n_classes (int, optional): output neuron in last layer. Defaults to 1000.
+            input_channel (int, optional): input channels in first conv layer. Defaults to 3.
+            dropout (float, optional): dropout in last layer. Defaults to 0.2.
         """
+
 
         super().__init__()
 
@@ -142,8 +156,8 @@ class MobileNetV2(nn.Module):
                 )
                 in_channels = out_channels
                 stride = 1
-
-        self.model.append(ConvNormReLUBlock(320, 1028, (1, 1)))
+        
+        self.model.append(ConvNormReLUBlock(in_channels, 1028, (1, 1)))
         self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
         self.model.append(nn.Dropout(dropout))
@@ -171,7 +185,7 @@ if __name__ == "__main__":
         input_data=image,
         col_names=["input_size", "output_size", "num_params"],
         device="cpu",
-        depth=2,
+        # depth=2,
     )
 
     out = mobilenet_v2(image)
