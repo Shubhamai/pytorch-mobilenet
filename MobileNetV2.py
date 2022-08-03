@@ -25,7 +25,9 @@ config = (
 )
 
 
-class ConvBatchReLUBlock(nn.Module):
+class ConvNormReLUBlock(nn.Module):
+    """Constructs a block containing a combination of convolution, batchnorm and relu"""
+
     def __init__(
         self,
         in_channels: int,
@@ -34,11 +36,19 @@ class ConvBatchReLUBlock(nn.Module):
         stride: int = 1,
         padding: int = 0,
         groups: int = 1,
-        bias:bool=False
+        bias: bool = False,
     ):
         super().__init__()
 
-        self.conv = nn.Conv2d(in_channels, out_channels,kernel_size, stride=stride, padding=padding, groups=groups, bias=bias)
+        self.conv = nn.Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            groups=groups,
+            bias=bias,
+        )
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU6()
 
@@ -66,17 +76,15 @@ class InverseResidualBlock(nn.Module):
         """Attributes:
         `in_channels`: Integer indicating input channels
         `out_channels`: Integer indicating output channels
-        `stride`: Integer indicating stride paramemeter for depthwise convolution
-        `expansion_factor` : Calculating the input & output channel for depthwise convolution by multiplying the expansion factor with input channels"""
+        `expansion_factor` : Calculating the input & output channel for depthwise convolution by multiplying the expansion factor with input channels
+        `stride`: Integer indicating stride paramemeter for depthwise convolution"""
         super().__init__()
 
         hidden_channels = in_channels * expansion_factor
         self.residual = in_channels == out_channels and stride == 1
 
-        self.conv1 = nn.Conv2d(in_channels, hidden_channels, (1, 1))
-        self.bn1 = nn.BatchNorm2d(hidden_channels)
-        self.relu1 = nn.ReLU6()
-        self.depthwise_conv = nn.Conv2d(
+        self.conv1 = ConvNormReLUBlock(in_channels, hidden_channels, (1, 1))
+        self.depthwise_conv = ConvNormReLUBlock(
             hidden_channels,
             hidden_channels,
             (3, 3),
@@ -84,8 +92,6 @@ class InverseResidualBlock(nn.Module):
             padding=1,
             groups=hidden_channels,
         )
-        self.bn2 = nn.BatchNorm2d(hidden_channels)
-        self.relu2 = nn.ReLU6()
         self.conv2 = nn.Conv2d(hidden_channels, out_channels, (1, 1))
 
     def forward(self, x):
@@ -94,11 +100,7 @@ class InverseResidualBlock(nn.Module):
         identity = x
 
         x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu1(x)
         x = self.depthwise_conv(x)
-        x = self.bn2(x)
-        x = self.relu2(x)
         x = self.conv2(x)
 
         if self.residual:
@@ -119,15 +121,14 @@ class MobileNetV2(nn.Module):
         """Attributes:
         `n_classes`: An integer count of output neuron in last layer.
         `input_channel`: An integer value input channels in first conv layer
+        `dropout` [0, 1] : A float parameter for dropout in last layer
         """
 
         super().__init__()
 
         self.model = nn.Sequential(
-            nn.Conv2d(input_channel, 32, (3, 3), stride=2, padding=1)
+            ConvNormReLUBlock(input_channel, 32, (3, 3), stride=2, padding=1)
         )
-        self.model.append(nn.BatchNorm2d(32))
-        self.model.append(nn.ReLU6())
 
         for in_channels, out_channels, stride, expansion_factor, repeat in config:
             for _ in range(repeat):
@@ -142,9 +143,7 @@ class MobileNetV2(nn.Module):
                 in_channels = out_channels
                 stride = 1
 
-        self.model.append(nn.Conv2d(320, 1028, (1, 1)))
-        self.model.append(nn.BatchNorm2d(1028))
-        self.model.append(nn.ReLU6())
+        self.model.append(ConvNormReLUBlock(320, 1028, (1, 1)))
         self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
         self.model.append(nn.Dropout(dropout))
