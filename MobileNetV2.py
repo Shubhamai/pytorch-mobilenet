@@ -11,21 +11,8 @@ import torch
 from torch import nn
 from torchsummary import summary
 
-# The configuration of MobileNetV2
-# input channels, output channels, stride, expansion factor, repeat
-config = (
-    (32, 16, 1, 1, 1),
-    (16, 24, 2, 6, 2),
-    (24, 32, 2, 6, 3),
-    (32, 64, 2, 6, 4),
-    (64, 96, 1, 6, 3),
-    (96, 160, 2, 6, 3),
-    (160, 320, 1, 6, 1),
-)
-
 
 class ConvNormReLUBlock(nn.Module):
-
     def __init__(
         self,
         in_channels: int,
@@ -35,9 +22,10 @@ class ConvNormReLUBlock(nn.Module):
         padding: int = 0,
         groups: int = 1,
         bias: bool = False,
+        activation: bool = nn.ReLU6,
     ):
         """Constructs a block containing a combination of convolution, batchnorm and relu
-        
+
         Args:
             in_channels (int): input channels
             out_channels (int): output channels
@@ -46,8 +34,9 @@ class ConvNormReLUBlock(nn.Module):
             padding (int, optional): padding parameter for convolution. Defaults to 0.
             groups (int, optional): number of blocked connections from input channel to output channel for convolution. Defaults to 1.
             bias (bool, optional): whether to enable bias in convolution. Defaults to False.
+            activation (bool, optional): activation function to use. Defaults to nn.ReLU6.
         """
-        
+
         super().__init__()
 
         self.conv = nn.Conv2d(
@@ -60,20 +49,19 @@ class ConvNormReLUBlock(nn.Module):
             bias=bias,
         )
         self.bn = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU6()
+        self.activation = activation()
 
     def forward(self, x):
         """Perform forward pass."""
 
         x = self.conv(x)
         x = self.bn(x)
-        x = self.relu(x)
+        x = self.activation(x)
 
         return x
 
 
 class InverseResidualBlock(nn.Module):
-
     def __init__(
         self,
         in_channels: int,
@@ -82,7 +70,7 @@ class InverseResidualBlock(nn.Module):
         stride: int = 1,
     ):
         """Constructs a inverse residual block with depthwise seperable convolution
-        
+
         Args:
             in_channels (int): input channels
             out_channels (int): output channels
@@ -95,7 +83,11 @@ class InverseResidualBlock(nn.Module):
         hidden_channels = in_channels * expansion_factor
         self.residual = in_channels == out_channels and stride == 1
 
-        self.conv1 = ConvNormReLUBlock(in_channels, hidden_channels, (1, 1))
+        self.conv1 = (
+            ConvNormReLUBlock(in_channels, hidden_channels, (1, 1))
+            if in_channels != hidden_channels
+            else nn.Identity()
+        )
         self.depthwise_conv = ConvNormReLUBlock(
             hidden_channels,
             hidden_channels,
@@ -104,7 +96,9 @@ class InverseResidualBlock(nn.Module):
             padding=1,
             groups=hidden_channels,
         )
-        self.conv2 = nn.Conv2d(hidden_channels, out_channels, (1, 1))
+        self.conv2 = ConvNormReLUBlock(
+            hidden_channels, out_channels, (1, 1), activation=nn.Identity
+        )
 
     def forward(self, x):
         """Perform forward pass."""
@@ -122,29 +116,39 @@ class InverseResidualBlock(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-
     def __init__(
         self,
         n_classes: int = 1000,
         input_channel: int = 3,
         dropout: float = 0.2,
-    ):    
+    ):
         """Constructs MobileNetV2 architecture
-        
+
         Args:
             n_classes (int, optional): output neuron in last layer. Defaults to 1000.
             input_channel (int, optional): input channels in first conv layer. Defaults to 3.
             dropout (float, optional): dropout in last layer. Defaults to 0.2.
         """
 
-
         super().__init__()
+
+        # The configuration of MobileNetV2
+        # input channels, expansion factor, output channels, repeat, stride,
+        config = (
+            (32, 1, 16, 1, 1),
+            (16, 6, 24, 2, 2),
+            (24, 6, 32, 3, 2),
+            (32, 6, 64, 4, 2),
+            (64, 6, 96, 3, 1),
+            (96, 6, 160, 3, 2),
+            (160, 6, 320, 1, 1),
+        )
 
         self.model = nn.Sequential(
             ConvNormReLUBlock(input_channel, 32, (3, 3), stride=2, padding=1)
         )
 
-        for in_channels, out_channels, stride, expansion_factor, repeat in config:
+        for in_channels, expansion_factor, out_channels, repeat, stride in config:
             for _ in range(repeat):
                 self.model.append(
                     InverseResidualBlock(
@@ -156,12 +160,12 @@ class MobileNetV2(nn.Module):
                 )
                 in_channels = out_channels
                 stride = 1
-        
-        self.model.append(ConvNormReLUBlock(in_channels, 1028, (1, 1)))
+
+        self.model.append(ConvNormReLUBlock(in_channels, 1280, (1, 1)))
         self.model.append(nn.AdaptiveAvgPool2d(1))
         self.model.append(nn.Flatten())
         self.model.append(nn.Dropout(dropout))
-        self.model.append(nn.Linear(1028, n_classes))
+        self.model.append(nn.Linear(1280, n_classes))
 
     def forward(self, x):
         """Perform forward pass."""
@@ -185,7 +189,7 @@ if __name__ == "__main__":
         input_data=image,
         col_names=["input_size", "output_size", "num_params"],
         device="cpu",
-        # depth=2,
+        depth=2,
     )
 
     out = mobilenet_v2(image)

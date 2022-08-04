@@ -6,6 +6,7 @@ This repo contains the following implementations :
 - [`MobileNetV2.py`](/MobileNetV2.py) : [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381). 
 
 ## Table of Contents
+
 - [MobileNet](#mobilenet)
 - [Table of Contents](#table-of-contents)
 - [Usage](#usage)
@@ -13,13 +14,13 @@ This repo contains the following implementations :
 - [Acknowledgements](#acknowledgements)
 - [Citation](#citation)
 
-The key takeaways for this papers are -
+The key takeaways for the papers are -
 
 1. MobileNetv1
    1. Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
 2. MobileNetv2
    1. It improves on MobileNetv1 by using *linear bottleneck with inverted residuals and depwise seperable convolution* and it's main building block. It does sounds very mountful but is simply a combination of many basic ideas. [This blog](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini explains all of these terms quite well.  
-
+   2. `Sigmoid` function is not included after the last output layer. 
 
 
 ## Usage
@@ -30,10 +31,11 @@ The key takeaways for this papers are -
 - In `MobileNetV1` paper, there was no mention of using `ReLU6` as activation function, but since I found most blogs and resources using ReLU6,  I decided to use that by default. But in case, I added an extra parameter `use_relu6` ( defaults to `true` ) in allows the option to either use `ReLU` or `ReLU6`. 
   - Update: Turns out it is mentioned in the `MobileNetv2` paper. 
 - In `MobileNetV2`, the paper mentions about 3.4 million parameters as a default model, but I have been unable to reproduce that, currently, the model has about 3.17 million parameters. 
+  - Update: While comparing it to the torchvision mobilenetv2, I found out that some batchnorm layers were missing. Now it has around 3.5 million parameters. 
 
 ## Acknowledgements
 
-I found these resources helpful to understand MobileNet and Depthwise Seperable Convolution
+I found these resources helpful to understand MobileNet and Depthwise Separable Convolution
 
 - MobileNetV1
     - [MobileNet Research Paper Walkthrough](https://youtu.be/HD9FnjVwU8g) by Rahul Deora
