@@ -4,6 +4,7 @@
 This repo contains the following implementations : 
 - [`MobileNetV1.py`](/MobileNetV1.py) : [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf)
 - [`MobileNetV2.py`](/MobileNetV2.py) : [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381). 
+- [`MobileNetV3.py`](MobileNetV3.py) : [Searching for MobileNetV3](https://arxiv.org/abs/1905.02244v5)
 
 ## Table of Contents
 
@@ -21,7 +22,6 @@ The key takeaways for the papers are -
 2. MobileNetv2
    1. It improves on MobileNetv1 by using *linear bottleneck with inverted residuals and depwise seperable convolution* and it's main building block. It does sounds very mountful but is simply a combination of many basic ideas. [This blog](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini explains all of these terms quite well.  
    2. `Sigmoid` function is not included after the last output layer. 
-
 
 ## Usage
 
@@ -45,6 +45,9 @@ I found these resources helpful to understand MobileNet and Depthwise Separable 
     - [MobileNetV2 and EfficientNet](https://youtu.be/IBndcd4UfTs) by Rahul Deora
     - [New mobile neural network architectures](https://machinethink.net/blog/mobile-architectures/) by Matthijs Hollemans
     - [Residual, BottleNeck, Inverted Residual, Linear BottleNeck, MBConv Explained](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini
+- MobileNetV2
+  - [MobileNetV3 | Lecture 16 (Part 3) | Applied Deep Learning (Supplementary)](https://youtu.be/O7mQpJnB-cw) by Maziar Raissi
+  - [Searching for MobileNetV3 | Paper Walkthrough & PyTorch Implementation](https://youtu.be/0oqs-inp7sA) by Maciej Balawejder
 
 ## Citation
 ```
@@ -65,5 +68,16 @@ I found these resources helpful to understand MobileNet and Depthwise Separable 
     eprint={1801.04381},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
+}
+
+@misc{https://doi.org/10.48550/arxiv.1905.02244,
+  doi = {10.48550/ARXIV.1905.02244},
+  url = {https://arxiv.org/abs/1905.02244},
+  author = {Howard, Andrew and Sandler, Mark and Chu, Grace and Chen, Liang-Chieh and Chen, Bo and Tan, Mingxing and Wang, Weijun and Zhu, Yukun and Pang, Ruoming and Vasudevan, Vijay and Le, Quoc V. and Adam, Hartwig},
+  keywords = {Computer Vision and Pattern Recognition (cs.CV), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  title = {Searching for MobileNetV3},
+  publisher = {arXiv},
+  year = {2019},
+  copyright = {arXiv.org perpetual, non-exclusive license}
 }
 ```
