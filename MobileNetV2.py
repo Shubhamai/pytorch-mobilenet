@@ -86,7 +86,7 @@ class InverseResidualBlock(nn.Module):
         self.conv1 = (
             ConvNormReLUBlock(in_channels, hidden_channels, (1, 1))
             if in_channels != hidden_channels
-            else nn.Identity()
+            else nn.Identity() #  If it's not the first layer, then we need to add a 1x1 convolutional layer to expand the number of channels
         )
         self.depthwise_conv = ConvNormReLUBlock(
             hidden_channels,

@@ -12,7 +12,7 @@ This repo contains the following implementations :
 - [Table of Contents](#table-of-contents)
 - [Usage](#usage)
 - [Notes](#notes)
-- [Acknowledgements](#acknowledgements)
+- [Acknowledgments](#acknowledgments)
 - [Citation](#citation)
 
 The key takeaways for the papers are -
@@ -22,6 +22,10 @@ The key takeaways for the papers are -
 2. MobileNetv2
    1. It improves on MobileNetv1 by using *linear bottleneck with inverted residuals and depwise seperable convolution* and it's main building block. It does sounds very mountful but is simply a combination of many basic ideas. [This blog](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini explains all of these terms quite well.  
    2. `Sigmoid` function is not included after the last output layer. 
+3. MobileNetv3
+   1. It introduces a squeeze and excitation block in the intermediate layers, along with the depthwise separable convolution and inverted residuals from MobileNetV1 & V2 respectively.
+   2. It also uses Neural Architecture Search to find the best architecture for low latency and high accuracy.
+   3. it also adds HardSwish and HardSigmoid activations functions instead of ReLU6 for previous versions.  
 
 ## Usage
 
@@ -33,7 +37,7 @@ The key takeaways for the papers are -
 - In `MobileNetV2`, the paper mentions about 3.4 million parameters as a default model, but I have been unable to reproduce that, currently, the model has about 3.17 million parameters. 
   - Update: While comparing it to the torchvision mobilenetv2, I found out that some batchnorm layers were missing. Now it has around 3.5 million parameters. 
 
-## Acknowledgements
+## Acknowledgments
 
 I found these resources helpful to understand MobileNet and Depthwise Separable Convolution
 
@@ -45,7 +49,7 @@ I found these resources helpful to understand MobileNet and Depthwise Separable 
     - [MobileNetV2 and EfficientNet](https://youtu.be/IBndcd4UfTs) by Rahul Deora
     - [New mobile neural network architectures](https://machinethink.net/blog/mobile-architectures/) by Matthijs Hollemans
     - [Residual, BottleNeck, Inverted Residual, Linear BottleNeck, MBConv Explained](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini
-- MobileNetV2
+- MobileNetV3
   - [MobileNetV3 | Lecture 16 (Part 3) | Applied Deep Learning (Supplementary)](https://youtu.be/O7mQpJnB-cw) by Maziar Raissi
   - [Searching for MobileNetV3 | Paper Walkthrough & PyTorch Implementation](https://youtu.be/0oqs-inp7sA) by Maciej Balawejder
 

@@ -22,12 +22,16 @@ class SqueezeExitationBlock(nn.Module):
         super().__init__()
 
         self.pool1 = nn.AdaptiveAvgPool2d(1)
-        self.linear1 = nn.Linear(in_channels, in_channels // 4, bias=True)
+        self.linear1 = nn.Linear(
+            in_channels, in_channels // 4
+        )  # divide by 4 is mentioned in the paper, 5.3. Large squeeze-and-excite
         self.act1 = nn.ReLU()
-        self.linear2 = nn.Linear(in_channels // 4, in_channels, bias=True)
+        self.linear2 = nn.Linear(in_channels // 4, in_channels)
         self.act2 = nn.Hardsigmoid()
 
     def forward(self, x):
+        """Forward pass for SqueezeExitationBlock."""
+
         identity = x
 
         x = self.pool1(x)
@@ -52,7 +56,7 @@ class ConvNormActivationBlock(nn.Module):
         padding: int = 0,
         groups: int = 1,
         bias: bool = False,
-        activation=nn.Hardswish,
+        activation: torch.nn = nn.Hardswish,
     ):
         """Constructs a block containing a convolution, batch normalization and activation layer
 
@@ -64,7 +68,7 @@ class ConvNormActivationBlock(nn.Module):
             padding (int, optional): padding of the convolutional kernel. Defaults to 0.
             groups (int, optional): number of groups for depthwise seperable convolution. Defaults to 1.
             bias (bool, optional): whether to use bias. Defaults to False.
-            activation (_type_, optional): activation function. Defaults to nn.Hardswish.
+            activation (torch.nn, optional): activation function. Defaults to nn.Hardswish.
         """
         super().__init__()
 
@@ -102,7 +106,7 @@ class InverseResidualBlock(nn.Module):
         activation: nn.Module = nn.Hardswish,
     ):
 
-        """Constructs a inverse residual block with squeeze and exitation
+        """Constructs a inverse residual block
 
         Args:
             in_channels (int): number of input channels
@@ -110,7 +114,7 @@ class InverseResidualBlock(nn.Module):
             kernel_size (int): size of the convolutional kernel
             expansion_size (int, optional): size of the expansion factor. Defaults to 6.
             stride (int, optional): stride of the convolutional kernel. Defaults to 1.
-            squeeze_exitation (bool, optional): whether to use squeeze and exitation block or not. Defaults to True.
+            squeeze_exitation (bool, optional): whether to add squeeze and exitation block or not. Defaults to True.
             activation (nn.Module, optional): activation function. Defaults to nn.Hardswish.
         """
 
@@ -125,7 +129,7 @@ class InverseResidualBlock(nn.Module):
             )
             if in_channels != expansion_size
             else nn.Identity()
-        )
+        )  # If it's not the first layer, then we need to add a 1x1 convolutional layer to expand the number of channels
         self.depthwise_conv = ConvNormActivationBlock(
             expansion_size,
             expansion_size,
@@ -138,7 +142,9 @@ class InverseResidualBlock(nn.Module):
         if self.squeeze_exitation:
             self.se = SqueezeExitationBlock(expansion_size)
 
-        self.conv2 = nn.Conv2d(expansion_size, out_channels, (1, 1), bias=False)
+        self.conv2 = nn.Conv2d(
+            expansion_size, out_channels, (1, 1), bias=False
+        )  # bias is false because we are using batch normalization, which already has bias
         self.norm = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
@@ -244,16 +250,20 @@ class MobileNetV3(nn.Module):
                 )
             )
 
-        _mid_channel = 576 if config == "small" else 960
+        hidden_channels = 576 if config == "small" else 960
         _out_channel = 1024 if config == "small" else 1280
 
         self.model.append(
             ConvNormActivationBlock(
-                out_channels, _mid_channel, (1, 1), bias=False, activation=nn.Hardswish
+                out_channels,
+                hidden_channels,
+                (1, 1),
+                bias=False,
+                activation=nn.Hardswish,
             )
         )
         self.model.append(nn.AdaptiveAvgPool2d(1))
-        self.model.append(nn.Conv2d(_mid_channel, _out_channel, (1, 1)))
+        self.model.append(nn.Conv2d(hidden_channels, _out_channel, (1, 1)))
         self.model.append(nn.Hardswish())
         self.model.append(nn.Dropout(dropout))
         self.model.append(nn.Conv2d(_out_channel, n_classes, (1, 1)))
