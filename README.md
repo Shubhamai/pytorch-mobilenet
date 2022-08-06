@@ -1,8 +1,8 @@
 ## MobileNet
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Shubhamai/pytorch-mobilenet/blob/main/LICENSE)
 
-This repo contains the following implementations : 
-- [`MobileNetV1.py`](/MobileNetV1.py) : [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf)
+This repo contains the following implementations from scratch using PyTorch : 
+- [`MobileNetV1.py`](/MobileNetV1.py) : [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861)
 - [`MobileNetV2.py`](/MobileNetV2.py) : [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381). 
 - [`MobileNetV3.py`](MobileNetV3.py) : [Searching for MobileNetV3](https://arxiv.org/abs/1905.02244v5)
 
@@ -10,15 +10,25 @@ This repo contains the following implementations :
 
 - [MobileNet](#mobilenet)
 - [Table of Contents](#table-of-contents)
+- [What is MobileNet?](#what-is-mobilenet)
 - [Usage](#usage)
 - [Notes](#notes)
 - [Acknowledgments](#acknowledgments)
 - [Citation](#citation)
 
-The key takeaways for the papers are -
+## What is MobileNet?
+
+The main idea behind MobileNet(s) is to create efficient neural networks to make them viable for real-time mobile and embedded devices. The architecture(s) have shown high efficiency in tasks like image classification, object detection, and semantic segmentation in mobile devices with low latency and high accuracy. 
+
+
+<p align="center">
+<img src="./assets/acc_latency_chart.png" width="350"/>
+</p>
+
+The key takeaways for the paper(s) are -
 
 1. MobileNetv1
-   1. Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution to substantially decrease the number of parameters making CNN more viable for mobile & embedded devices.   
+   1. Using Depthwise Separable Convolution with Pointwise Convolution instead of standard convolution substantially decreases the number of parameters making CNN more viable for mobile & embedded devices.   
 2. MobileNetv2
    1. It improves on MobileNetv1 by using *linear bottleneck with inverted residuals and depwise seperable convolution* and it's main building block. It does sounds very mountful but is simply a combination of many basic ideas. [This blog](https://towardsdatascience.com/residual-bottleneck-inverted-residual-linear-bottleneck-mbconv-explained-89d7b7e7c6bc) by Francesco Zuppichini explains all of these terms quite well.  
    2. `Sigmoid` function is not included after the last output layer. 
@@ -27,11 +37,20 @@ The key takeaways for the papers are -
    2. It also uses Neural Architecture Search to find the best architecture for low latency and high accuracy.
    3. it also adds HardSwish and HardSigmoid activations functions instead of ReLU6 for previous versions.  
 
+<p align="center">
+<img src="./assets/mobilenet_v1_v2_comparison.png" width="350"/>
+<img src="./assets/mobilenet_v2_v3_comparison.png" width="350"/>
+</p>
+
+
 ## Usage
 
 > In progress...
 
 ## Notes
+
+
+
 - In `MobileNetV1` paper, there was no mention of using `ReLU6` as activation function, but since I found most blogs and resources using ReLU6,  I decided to use that by default. But in case, I added an extra parameter `use_relu6` ( defaults to `true` ) in allows the option to either use `ReLU` or `ReLU6`. 
   - Update: Turns out it is mentioned in the `MobileNetv2` paper. 
 - In `MobileNetV2`, the paper mentions about 3.4 million parameters as a default model, but I have been unable to reproduce that, currently, the model has about 3.17 million parameters. 
