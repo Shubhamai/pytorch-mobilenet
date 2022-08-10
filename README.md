@@ -45,8 +45,16 @@ The key takeaways for the paper(s) are -
 
 ## Usage
 
-> In progress...
+Simply add the given model files in your code, you can import the model by running 
 
+*using mobilenetv1 as an example*
+```python
+from MobileNetV1 import MobileNetV1
+
+mobilenet_v1 = MobileNetV1(n_classes=1000, input_channel=3, depth_multiplier=1.0, use_relu6=True)
+
+print(mobilenet_v1)
+```
 ## Notes
 
 
